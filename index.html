@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Benz Signals – Live Results</title>
+<meta name="description" content="Every Benz Signals trade, wins and losses, updated automatically after each closed trade.">
+<style>
+:root{--bg:#0F1012;--card:#18191C;--line:#2A2B30;--text:#F2EFE8;--muted:#9C978C;--faint:#6E6A62;--gold:#D9A93F;--good:#3FBF7F;--bad:#F06A6A;--grid:#25262A}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font:15px/1.5 Inter,"Segoe UI",system-ui,sans-serif}
+.wrap{max-width:980px;margin:0 auto;padding:28px 16px 48px}
+header{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.logo{width:52px;height:52px;border-radius:50%;background:#000;border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;font:800 28px Georgia,serif;color:var(--gold)}
+h1{font-size:24px;font-weight:800;letter-spacing:-.3px}
+.sub{color:var(--muted);font-size:14px}
+.live{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);margin-left:auto}
+.live i{width:8px;height:8px;border-radius:50%;background:var(--good);box-shadow:0 0 0 3px rgba(63,191,127,.2)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin:24px 0}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.kpi b{display:block;font-size:24px;font-weight:800;margin-top:2px;font-variant-numeric:tabular-nums}
+.kpi span{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-weight:600}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:16px}
+h2{font-size:16px;font-weight:700;margin-bottom:12px}
+h2 small{font-weight:500;color:var(--muted);font-size:13px;margin-left:6px}
+#eq{position:relative}
+#eq svg{display:block;width:100%;height:240px}
+#tip{position:absolute;pointer-events:none;background:#000;border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:13px;white-space:nowrap;display:none}
+#tip .t{color:var(--muted);font-size:12px}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+th{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);font-weight:600;text-align:left;padding:8px 6px;border-bottom:1px solid var(--line)}
+td{padding:9px 6px;border-bottom:1px solid var(--grid);font-size:14px;white-space:nowrap}
+th{white-space:nowrap}
+td.n,th.n{text-align:right}
+.pos{color:var(--good)}.neg{color:var(--bad)}
+.badge{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:2px 9px;font-size:12px;font-weight:700;border:1px solid}
+.badge.w{color:var(--good);border-color:rgba(63,191,127,.45);background:rgba(63,191,127,.08)}
+.badge.l{color:var(--bad);border-color:rgba(240,106,106,.45);background:rgba(240,106,106,.08)}
+.badge.e{color:var(--muted);border-color:var(--line)}
+.side{font-weight:700}.side.BUY{color:var(--good)}.side.SELL{color:var(--bad)}
+.scroll{overflow-x:auto}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:720px){.two{grid-template-columns:1fr}.live{margin-left:0}}
+.empty{color:var(--muted);font-size:14px}
+.cta{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 24px}
+.btn{display:inline-block;text-decoration:none;font-weight:700;border-radius:999px;padding:10px 18px;font-size:14px}
+.btn.gold{background:var(--gold);color:#111}.btn.ghost{border:1px solid var(--line);color:var(--text)}
+footer{color:var(--faint);font-size:12px;line-height:1.6;margin-top:24px}
+#more{background:none;border:1px solid var(--line);color:var(--text);border-radius:999px;padding:8px 16px;margin-top:12px;cursor:pointer;font:inherit;font-size:13px}
+</style></head><body><div class="wrap">
+<header>
+ <div class="logo">B</div>
+ <div><h1>Benz Signals – Live Results</h1><div class="sub">Every trade, wins and losses. Updated automatically after each closed trade.</div></div>
+ <div class="live"><i></i>Updated <span id="upd"></span></div>
+</header>
+<div class="cta"><a class="btn gold" href="https://t.me/BenzSignalsFX">Join the free channel</a><a class="btn ghost" href="https://alal02.gumroad.com/l/chatcopierfx">Copy the signals to MT4/MT5 automatically</a></div>
+<div class="kpis" id="kpis"></div>
+<div class="card"><h2>Result over time <small id="eqsub"></small></h2><div id="eq"><svg id="eqsvg" role="img" aria-label="Cumulative result in USD after each closed trade"></svg><div id="tip"></div></div></div>
+<div class="card"><h2>Open trades now</h2><div class="scroll" id="open"></div></div>
+<div class="two">
+ <div class="card"><h2>By month</h2><div class="scroll" id="months"></div></div>
+ <div class="card"><h2>By market</h2><div class="scroll" id="markets"></div></div>
+</div>
+<div class="card"><h2>All closed trades <small>newest first</small></h2><div class="scroll" id="trades"></div></div>
+<footer>
+ Results are calculated by the Benz Signals bot from the broker's prices at the lot sizes shown in each signal (XAUUSD 0.02 lot, other markets 0.08 lot), split in equal parts per Take Profit. Spread, commission and swap are not included, so real results differ. Forward test since 12 Nov 2026.<br>
+ Trading forex and gold with leverage is risky and you can lose more than you deposit. Past results do not guarantee future results. Nothing on this page is financial advice.
+</footer>
+</div>
+<script>
+const D=/*DATA*/{"updated": "2026-11-13 17:06", "trades": [{"opened": "2026-11-12 11:15", "closed": "2026-11-12 13:15", "market": "XAUUSD", "side": "SELL", "entry": "3949.31", "exit": "3926.00", "why": "TP1", "r": 2.0, "pips": 233.1, "usd": 46.62, "lot": 0.02}, {"opened": "2026-11-12 11:30", "closed": "2026-11-12 14:30", "market": "EURUSD", "side": "SELL", "entry": "1.10893", "exit": "1.10973", "why": "SL", "r": -1.0, "pips": -8.0, "usd": -6.4, "lot": 0.08}, {"opened": "2026-11-12 11:30", "closed": "2026-11-12 15:00", "market": "GBPUSD", "side": "SELL", "entry": "1.32666", "exit": "1.32481", "why": "TP1", "r": 1.99, "pips": 18.5, "usd": 14.8, "lot": 0.08}, {"opened": "2026-11-12 14:45", "closed": "2026-11-12 17:45", "market": "EURUSD", "side": "SELL", "entry": "1.10825", "exit": "1.10479", "why": "TP3", "r": 2.01, "pips": 23.1, "usd": 18.48, "lot": 0.08}, {"opened": "2026-11-12 20:15", "closed": "2026-11-12 22:45", "market": "GBPUSD", "side": "SELL", "entry": "1.32352", "exit": "1.32352", "why": "TP1+BE", "r": 0.33, "pips": 3.6, "usd": 2.88, "lot": 0.08}, {"opened": "2026-11-12 20:45", "closed": "2026-11-12 23:04", "market": "XAUUSD", "side": "SELL", "entry": "3879.93", "exit": "3879.93", "why": "TP1+BE", "r": 0.33, "pips": 38.5, "usd": 7.7, "lot": 0.02}, {"opened": "2026-11-12 23:30", "closed": "2026-11-13 06:31", "market": "GBPUSD", "side": "SELL", "entry": "1.32341", "exit": "1.32224", "why": "TP1", "r": 1.5, "pips": 11.7, "usd": 9.36, "lot": 0.08}, {"opened": "2026-11-12 14:45", "closed": "2026-11-13 06:45", "market": "NZDUSD", "side": "SELL", "entry": "0.55576", "exit": "0.55373", "why": "TP3", "r": 1.99, "pips": 13.5, "usd": 10.8, "lot": 0.08}, {"opened": "2026-11-13 04:15", "closed": "2026-11-13 06:55", "market": "EURUSD", "side": "SELL", "entry": "1.10581", "exit": "1.10639", "why": "SL", "r": -1.0, "pips": -5.8, "usd": -4.64, "lot": 0.08}, {"opened": "2026-11-13 08:00", "closed": "2026-11-13 08:14", "market": "GBPUSD", "side": "SELL", "entry": "1.32293", "exit": "1.32373", "why": "SL", "r": -1.0, "pips": -8.0, "usd": -6.4, "lot": 0.08}, {"opened": "2026-11-13 08:00", "closed": "2026-11-13 08:18", "market": "EURUSD", "side": "SELL", "entry": "1.10590", "exit": "1.10660", "why": "SL", "r": -1.0, "pips": -7.0, "usd": -5.6, "lot": 0.08}], "open": [{"opened": "2026-11-13 05:45", "market": "XAUUSD", "side": "SELL", "entry": 3906.78, "sl": 3918.23, "tp": "3895.33 / 3883.88 / 3872.44"}, {"opened": "2026-11-13 07:45", "market": "NZDUSD", "side": "SELL", "entry": 0.55394, "sl": 0.55443, "tp": "0.55345"}, {"opened": "2026-11-13 08:45", "market": "EURUSD", "side": "SELL", "entry": 1.10585, "sl": 1.10663, "tp": "1.10468"}, {"opened": "2026-11-13 09:45", "market": "GBPUSD", "side": "SELL", "entry": 1.32338, "sl": 1.32431, "tp": "1.32245"}]}/*END*/;
+const $=s=>document.querySelector(s);
+const usd=v=>(v<0?"−":"+")+"$"+Math.abs(v).toFixed(2);
+const pips=v=>(v<0?"−":"+")+Math.abs(v).toFixed(1);
+const cls=v=>v>0?"pos":v<0?"neg":"";
+const T=D.trades.slice().sort((a,b)=>a.closed.localeCompare(b.closed));
+$("#upd").textContent=D.updated+" UTC";
+// KPIs
+const wins=T.filter(t=>t.usd>0.005),loss=T.filter(t=>t.usd<-0.005);
+const tot=T.reduce((s,t)=>s+t.usd,0),totp=T.reduce((s,t)=>s+t.pips,0);
+const gw=wins.reduce((s,t)=>s+t.usd,0),gl=-loss.reduce((s,t)=>s+t.usd,0);
+let peak=0,run=0,dd=0;for(const t of T){run+=t.usd;peak=Math.max(peak,run);dd=Math.max(dd,peak-run)}
+const k=[["Closed trades",T.length,""],["Winning trades",T.length?Math.round(100*wins.length/T.length)+"%":"–",""],
+ ["Total pips",T.length?pips(totp):"–",cls(totp)],["Total result",T.length?usd(tot):"–",cls(tot)],
+ ["Profit factor",gl>0?(gw/gl).toFixed(2):(gw>0?"∞":"–"),""],["Biggest drop",T.length?"−$"+dd.toFixed(2):"–",dd>0?"neg":""]];
+$("#kpis").innerHTML=k.map(([a,b,c])=>`<div class="kpi"><span>${a}</span><b class="${c}">${b}</b></div>`).join("");
+// equity curve (single series: no legend, title names it)
+(function(){const svg=$("#eqsvg"),W=svg.clientWidth||900,H=240,P={l:56,r:14,t:12,b:26};
+ svg.setAttribute("viewBox",`0 0 ${W} ${H}`);
+ if(!T.length){svg.outerHTML='<p class="empty">The first closed trade will appear here.</p>';return}
+ let c=0;const pts=[{x:0,y:0,t:null}].concat(T.map((t,i)=>({x:i+1,y:(c+=t.usd),t})));
+ const ys=pts.map(p=>p.y),mn=Math.min(0,...ys),mx=Math.max(0,...ys),pad=(mx-mn)*0.1||1;
+ const y0=mn-pad,y1=mx+pad,X=i=>P.l+(W-P.l-P.r)*i/(pts.length-1||1),Y=v=>P.t+(H-P.t-P.b)*(1-(v-y0)/(y1-y0));
+ const step=niceStep((y1-y0)/4);let g="";
+ for(let v=Math.ceil(y0/step)*step;v<=y1;v+=step){g+=`<line x1="${P.l}" x2="${W-P.r}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--grid)" stroke-width="1"/><text x="${P.l-8}" y="${Y(v)+4}" fill="var(--faint)" font-size="11" text-anchor="end">${v<0?"−":""}$${Math.abs(v).toFixed(step<1?2:0)}</text>`}
+ g+=`<line x1="${P.l}" x2="${W-P.r}" y1="${Y(0)}" y2="${Y(0)}" stroke="var(--muted)" stroke-width="1" stroke-dasharray="3 4"/>`;
+ const d=pts.map((p,i)=>(i?"L":"M")+X(p.x).toFixed(1)+" "+Y(p.y).toFixed(1)).join(" ");
+ const area=d+` L${X(pts.length-1)} ${Y(0)} L${X(0)} ${Y(0)} Z`;
+ g+=`<defs><linearGradient id="ga" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#D9A93F" stop-opacity=".22"/><stop offset="1" stop-color="#D9A93F" stop-opacity="0"/></linearGradient></defs>`;
+ g+=`<path d="${area}" fill="url(#ga)"/><path d="${d}" fill="none" stroke="var(--gold)" stroke-width="2" stroke-linejoin="round"/>`;
+ const last=pts[pts.length-1];g+=`<circle cx="${X(last.x)}" cy="${Y(last.y)}" r="4" fill="var(--gold)" stroke="var(--card)" stroke-width="2"/>`;
+ g+=`<text x="${P.l}" y="${H-6}" fill="var(--faint)" font-size="11">Trade 1</text><text x="${W-P.r}" y="${H-6}" fill="var(--faint)" font-size="11" text-anchor="end">Trade ${T.length}</text>`;
+ g+=`<line id="xh" y1="${P.t}" y2="${H-P.b}" stroke="var(--muted)" stroke-width="1" visibility="hidden"/><circle id="xd" r="5" fill="var(--gold)" stroke="var(--card)" stroke-width="2" visibility="hidden"/>`;
+ g+=`<rect x="${P.l}" y="0" width="${W-P.l-P.r}" height="${H}" fill="transparent" id="hit"/>`;
+ svg.innerHTML=g;$("#eqsub").textContent=`${usd(last.y)} after ${T.length} trades`;
+ const tip=$("#tip"),xh=$("#xh"),xd=$("#xd");
+ $("#hit").addEventListener("mousemove",e=>{const r=svg.getBoundingClientRect(),sx=(e.clientX-r.left)*W/r.width;
+  const i=Math.max(1,Math.min(pts.length-1,Math.round((sx-P.l)/((W-P.l-P.r)/(pts.length-1||1)))));const p=pts[i];
+  xh.setAttribute("x1",X(p.x));xh.setAttribute("x2",X(p.x));xh.setAttribute("visibility","visible");
+  xd.setAttribute("cx",X(p.x));xd.setAttribute("cy",Y(p.y));xd.setAttribute("visibility","visible");
+  tip.innerHTML=`<div class="t">Trade ${i} · ${p.t.closed} UTC</div><b>${p.t.market} ${p.t.side}</b> ${p.t.why} <span class="${cls(p.t.usd)}">${usd(p.t.usd)}</span><br>Total ${usd(p.y)}`;
+  tip.style.display="block";const tx=X(p.x)*r.width/W;tip.style.left=Math.min(r.width-tip.offsetWidth,Math.max(0,tx-tip.offsetWidth/2))+"px";tip.style.top=(Y(p.y)*r.height/H-tip.offsetHeight-12)+"px"});
+ $("#hit").addEventListener("mouseleave",()=>{tip.style.display="none";xh.setAttribute("visibility","hidden");xd.setAttribute("visibility","hidden")});
+})();
+function niceStep(r){const p=Math.pow(10,Math.floor(Math.log10(r||1))),m=r/p;return (m<=1?1:m<=2?2:m<=5?5:10)*p}
+function badge(t){if(t.usd>0.005)return`<span class="badge w">✓ ${t.why}</span>`;if(t.usd<-0.005)return`<span class="badge l">✕ ${t.why}</span>`;return`<span class="badge e">= ${t.why}</span>`}
+// open trades
+$("#open").innerHTML=D.open.length?`<table><tr><th>Opened (UTC)</th><th>Market</th><th>Side</th><th class="n">Entry</th><th class="n">SL</th><th class="n">TP</th></tr>${D.open.map(o=>`<tr><td>${o.opened}</td><td>${o.market}</td><td class="side ${o.side}">${o.side}</td><td class="n">${o.entry}</td><td class="n">${o.sl}</td><td class="n">${o.tp.replace(/ \/ /g,"<br>")}</td></tr>`).join("")}</table>`:'<p class="empty">No open trades right now.</p>';
+// groups
+function group(key){const m={};for(const t of T){const g=key(t);(m[g]=m[g]||{n:0,w:0,p:0,u:0});m[g].n++;if(t.usd>0.005)m[g].w++;m[g].p+=t.pips;m[g].u+=t.usd}return m}
+function gtable(m,label,order){const ks=Object.keys(m).sort(order);if(!ks.length)return'<p class="empty">No closed trades yet.</p>';
+ return`<table><tr><th>${label}</th><th class="n">Trades</th><th class="n">Wins</th><th class="n">Pips</th><th class="n">Result</th></tr>${ks.map(g=>{const x=m[g];return`<tr><td>${g}</td><td class="n">${x.n}</td><td class="n">${Math.round(100*x.w/x.n)}%</td><td class="n ${cls(x.p)}">${pips(x.p)}</td><td class="n ${cls(x.u)}">${usd(x.u)}</td></tr>`}).join("")}</table>`}
+const MN=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+$("#months").innerHTML=gtable(group(t=>t.closed.slice(0,7)),"Month",(a,b)=>b.localeCompare(a)).replace(/<td>(\d{4})-(\d{2})<\/td>/g,(s,y,mo)=>`<td>${MN[+mo-1]} ${y}</td>`);
+$("#markets").innerHTML=gtable(group(t=>t.market),"Market",(a,b)=>a.localeCompare(b));
+// trades list
+const R=T.slice().reverse();let shown=25;
+function drawTrades(){$("#trades").innerHTML=R.length?`<table><tr><th>Closed (UTC)</th><th>Market</th><th>Side</th><th class="n">Entry</th><th class="n">Exit</th><th>Result</th><th class="n">Pips</th><th class="n">USD</th></tr>${R.slice(0,shown).map(t=>`<tr><td>${t.closed}</td><td>${t.market}</td><td class="side ${t.side}">${t.side}</td><td class="n">${t.entry}</td><td class="n">${t.exit}</td><td>${badge(t)}</td><td class="n ${cls(t.pips)}">${pips(t.pips)}</td><td class="n ${cls(t.usd)}">${usd(t.usd)}</td></tr>`).join("")}</table>${R.length>shown?'<button id="more">Show all '+R.length+' trades</button>':""}`:'<p class="empty">No closed trades yet.</p>';
+ const m=$("#more");if(m)m.onclick=()=>{shown=R.length;drawTrades()}}
+drawTrades();
+</script></body></html>
